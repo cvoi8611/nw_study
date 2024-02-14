@@ -1,0 +1,24 @@
+{
+    "user":[
+        {
+            "name": "test",
+            "age": 10,
+            "email" : "test@test.com"
+        },
+        {
+            "name": "John Wick",
+            "age" : 26,
+            "email" : "jw_1231@gmail.com"
+        },
+        {
+            "name": "asdasdasd",
+            "age" : 21,
+            "email" : "asd@gmail.com"
+        },
+        {
+            "name": "Hong gildong",
+            "age" : 34,
+            "email" : "hgd123@gmail.com"
+        }
+    ]
+}
