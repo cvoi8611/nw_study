@@ -114,9 +114,9 @@ int main() {
                     //Max-Age를 -1로 설정하여 쿠키를 즉시 삭제함
                     strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nSet-Cookie: user=");
                     strcat(buf, username);
-                    strcat(buf, "; Max-Age=-1;\r\n\r\n");
+                    strcat(buf, "; Max-Age=-1; expires=Sat, 02 Oct 2022 11:34:04 GMT;\r\n\r\n");
                 }
-                strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
+                // strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
                 std::string filepath = "html/logout.html";
                 std::string content = Readfile(filepath);
                 strcat(buf, content.c_str());
