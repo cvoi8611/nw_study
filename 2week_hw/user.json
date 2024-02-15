@@ -1,0 +1,25 @@
+{
+    "user":[
+{"name": "Vodka", "id": 0},
+        {
+            "name": "test",
+            "id" : 10
+        },
+        {
+            "name": "John Wick",
+            "id" : 21
+        },
+        {
+            "name": "asdasdasd",
+            "id" : 11
+        },
+        {
+            "name": "Hong gildong",
+            "id" : 3
+        },
+        {
+            "name": "default",
+            "id" : 0
+        }
+    ]
+}

@@ -40,7 +40,7 @@ int main() {
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(8000);
+    servaddr.sin_port = htons(8001);
 
     if (bind(servsock, (sockaddr*)&servaddr, sizeof(servaddr)) == SOCKET_ERROR) {
         cout << "bind() error" << endl;
@@ -74,8 +74,13 @@ int main() {
         cout << "Client Connected" << endl;
 
         char buf[1024] = "";
+        int recvlen;
 
-            int recvlen;
+        //쿠키 user 값
+        char username[32];
+        int user_id = 0;
+
+        while (true) {
             // 논블로킹 소켓은 send()도 루프를 돌면서 될 때까지 계속 시도해야함
                 recvlen = recv(clisock, buf, sizeof(buf), 0);
                 if (recvlen == SOCKET_ERROR) {
@@ -88,8 +93,14 @@ int main() {
                         return 0;
                     }
                 }
+                else {
+                    break;
+                }
+        }
             //main page
             if (strstr(buf, "GET / HTTP/1.1") != NULL) {
+                
+
                 strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:close\r\n\r\n");
                 std::string filepath = "html/index.html";
                 std::string content = Readfile(filepath);
@@ -97,9 +108,16 @@ int main() {
             }
 
             //error page
-            if (strstr(buf, "GET /error HTTP/1.1") != NULL) {
+            if (strstr(buf, "GET /logout HTTP/1.1") != NULL) {
+                if (strstr(buf , "Cookie") != NULL){
+                    cout << "로그인 상태임을 확인함" << endl;
+                    //Max-Age를 -1로 설정하여 쿠키를 즉시 삭제함
+                    strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nSet-Cookie: user=");
+                    strcat(buf, username);
+                    strcat(buf, "; Max-Age=-1;\r\n\r\n");
+                }
                 strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
-                std::string filepath = "html/error.html";
+                std::string filepath = "html/logout.html";
                 std::string content = Readfile(filepath);
                 strcat(buf, content.c_str());
             }
@@ -120,20 +138,20 @@ int main() {
                 strcat(buf, content.c_str());
             }
 
+
+
             //login success page
             if (strstr(buf, "GET /login HTTP/1.1") != NULL) {
                 if (strstr(buf, "Cookie") != NULL){
-                    strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h2>Cookie 있음</h2>");
+                    strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h2>Cookie yes</h2><p>Welcome ");
+                    strcat(buf, username);
+                    strcat(buf, "</p>");
+
                 }
                 else {
-                    strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h2>Cookie 없음</h2>");
+                    strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h2>Cookie no</h2>");
                 }
             }
-
-            
-            //쿠키 user 값
-            char username[32];
-            int user_id = 0;
 
             //register page
             if (strstr(buf, "GET /register HTTP/1.1") != NULL) {
@@ -151,17 +169,17 @@ int main() {
                 ptr_1 += strlen("?name=");
                 char* ptr_2 = strstr(buf, " HTTP/1.1");
 
-                
                 int len = ptr_2 - ptr_1;
                 strncpy(username, ptr_1, len);
+                username[strcspn(username, " ")] = '\0';
 
-                cout << "username is : " << username << endl;
                 strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nSet-Cookie: user=");
+                string username_str(username);
                 strcat(buf, username);
-                strcat(buf, ";id=");
+                strcat(buf, "; id=");
                 std::string id_str = to_string(user_id);
                 strcat(buf, id_str.c_str());
-                strcat(buf, "; Max-Age=300;\r\n\r\n");
+                strcat(buf, "; Max-Age=300; Path=/\r\n\r\n");
                 string str1("<h1>Hello, ");
                 string str2("!</h1>");
                 str1 += username;
@@ -170,14 +188,13 @@ int main() {
 
 
                 //json 업데이트 코드
-                //왜 안되지...
                 std::string filepath = "json/user.json";
                 std::string content = Readfile(filepath);
                 cout << "json file :" << content << endl;
 
                 size_t position = content.find("\"user\": [");
                 position = content.find("[", position + 1);
-                std::string username_str(username);
+                //std::string username_str(username);
                 content.insert(position + 1, "\n{\"name\": \"" + username_str + "\", \"id\": " + id_str + "},");
 
                 std::ofstream outFile("user.json");
@@ -200,7 +217,7 @@ int main() {
 
             int sendlen;
             // 논블로킹 소켓은 send()도 루프를 돌면서 될 때까지 계속 시도해야함
-            //while (true) {
+            while (true) {
                 sendlen = send(clisock, buf, strlen(buf) + 1, 0);
                 if (sendlen == SOCKET_ERROR) {
                     // 논블로킹 소켓은 send()에서 한번 더 체크해줘야함
@@ -212,16 +229,17 @@ int main() {
                         return 0;
                     }
                 }
-                // else {
-                //     break;
-                // }
-            //}
+                else {
+                    break;
+                }
+            }
 
-            if (sendlen == 0) { // 클라이언트가 접속을 끊었으면
+            // if (sendlen == 0) { // 클라이언트가 접속을 끊었으면
                 close(clisock); // 소켓을 닫고
                 cout << "Client Disconnected" << endl;
-                break; // 루프를 빠져나가서 다음 클라이언트를 받는다
-            }
+                // break; // 루프를 빠져나가서 다음 클라이언트를 받는다
+                continue;
+            // }
         //}
     }
 
