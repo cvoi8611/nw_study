@@ -68,8 +68,10 @@ int main() {
 
         int recvlen;
         while (true) {
+            //정상적인 값을 받는지 루프를 돌림
             recvlen = recv(clisock, buf, sizeof(buf), 0);
             if (recvlen == SOCKET_ERROR) {
+                //비정상적인 값을 받으면 -> continue; or return 0;
                 if (errno == EINPROGRESS || errno == EWOULDBLOCK) {
                     continue;
                 }
@@ -79,14 +81,13 @@ int main() {
                 }
             }
             else {
+                //정상적인 값을 받음 -> break;
                 break;
             }
         }
         //main page
         if (strstr(buf, "GET / HTTP/1.1") != NULL) {
-            
-
-            strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:close\r\n\r\n");
+            strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nConnection:close\r\n\r\n");
             std::string filepath = "html/index.html";
             std::string content = Readfile(filepath);
             strcat(buf, content.c_str());
@@ -97,7 +98,7 @@ int main() {
             if (strstr(buf , "Cookie") != NULL){
                 cout << "로그인 상태임을 확인함" << endl;
                 //Max-Age를 -1로 설정하여 쿠키를 즉시 삭제함
-                strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nSet-Cookie: user=");
+                strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nSet-Cookie: user=");
                 strcat(buf, username);
                 strcat(buf, "; Max-Age=-1; expires=Sat, 02 Oct 2022 11:34:04 GMT;\r\n\r\n");
             }
@@ -109,7 +110,7 @@ int main() {
 
         //test json page
         if (strstr(buf, "GET /test HTTP/1.1") != NULL) {
-            strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n");
+            strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n");
             std::string filepath = "json/test.json";
             std::string content = Readfile(filepath);
             strcat(buf, content.c_str());
@@ -117,7 +118,7 @@ int main() {
 
         //user json page
         if (strstr(buf, "GET /user HTTP/1.1") != NULL) {
-            strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n");
+            strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n");
             std::string filepath = "json/user.json";
             std::string content = Readfile(filepath);
             strcat(buf, content.c_str());
@@ -134,13 +135,13 @@ int main() {
 
             }
             else {
-                strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h2>Cookie no</h2>");
+                strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h2>Cookie disabled</h2>");
             }
         }
 
         //register page
         if (strstr(buf, "GET /register HTTP/1.1") != NULL) {
-            strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
+            strcpy(buf, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n");
             std::string filepath = "html/register.html";
             std::string content = Readfile(filepath);
             strcat(buf, content.c_str());
@@ -179,10 +180,9 @@ int main() {
 
             size_t position = content.find("\"user\": [");
             position = content.find("[", position + 1);
-            //std::string username_str(username);
             content.insert(position + 1, "\n{\"name\": \"" + username_str + "\", \"id\": " + id_str + "},");
 
-            std::ofstream outFile("user.json");
+            std::ofstream outFile("json/user.json");
             outFile << content;
             outFile.close();
         }
