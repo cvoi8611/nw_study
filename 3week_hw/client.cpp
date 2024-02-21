@@ -18,7 +18,7 @@ int main() {
     memset(&servAddr, 0, sizeof(servAddr));
     servAddr.sin_family = AF_INET;
     servAddr.sin_addr.s_addr = inet_addr(ip);
-    servAddr.sin_port = htons(12345);
+    servAddr.sin_port = htons(8000);
 
     while (true) {
         if (connect(clisock, (sockaddr*)&servAddr, sizeof(servAddr)) == SOCKET_ERROR) {
@@ -36,10 +36,9 @@ int main() {
     }
     
     char buf[1024] = "";
-    char req[1024] = "request to serv";
 
-    while (true){
-        strcpy(buf,req);
+    while (true) {
+        cout << "Input: "; cin >> buf;
 
         while (true) {
             if (send(clisock, buf, strlen(buf) + 1, 0) == SOCKET_ERROR) {
@@ -76,10 +75,10 @@ int main() {
         if (recvlen == 0) {
             break;
         }
-        
+
         buf[recvlen] = '\0';
 
-        cout << "Recv from server: " << buf << endl;
+        cout << "Echo : " << buf << endl;
     }
     
 

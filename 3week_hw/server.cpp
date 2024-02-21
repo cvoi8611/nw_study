@@ -34,7 +34,7 @@ int main() {
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(12345);
+    servaddr.sin_port = htons(8001);
 
     if (bind(servsock, (sockaddr*)&servaddr, sizeof(servaddr)) == SOCKET_ERROR) {
         cout << "bind() error" << endl;
@@ -66,8 +66,9 @@ int main() {
         return 1;
     }
 
-    while (true) {
+    cout << "Connect Waiting..." << endl;
 
+    while (true) {
         int epfds = epoll_wait(epollfd, epEvents, MAX_EVENTS, INFINITE);
         if (epfds == SOCKET_ERROR) {
             cout << "epoll_wait() error" << endl;
@@ -99,20 +100,21 @@ int main() {
 
                 sessions.push_back(newSession);
 
-                cout << "Client Connected" << endl;
+                cout << "Reverse Server Connected" << endl;
                 continue;
             }
             Session* session = (Session*)epEvents[i].data.ptr;
             bool isClosed = false;
 
-            
-
             if (epEvents[i].events & EPOLLIN) {
                 while (true) {
                     int recvlen = recv(session->sock, session->buf, DEFAULT_BUFLEN, 0);
                     if (recvlen == SOCKET_ERROR && errno == EAGAIN) {
-
-                        cout << "Input to client: "; cin >> session->buf;
+                        cout << "(Server) Rev_Server -> Server : " << session->buf << endl;
+                        if (strstr((session->buf),"HelloWorld!") != NULL ){
+                            strcpy((session->buf),"Welcome!");
+                        }
+                        cout << "(Server) Server -> Rev_Server : " << session->buf << endl;
                         break;
                     }
                     else if (recvlen > 0) {
@@ -122,7 +124,7 @@ int main() {
                         }
                     }
                     else {
-                        cout << "Client Disconnected" << endl;
+                        cout << "Rev_Server Disconnected" << endl;
                         close(session->sock);
                         sessions.erase(
                             remove(sessions.begin(), sessions.end(), session),
