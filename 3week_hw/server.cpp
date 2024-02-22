@@ -1,17 +1,7 @@
 #include "lib.h"
 
 #define DEFAULT_BUFLEN 1024
-#define MAX_EVENTS 100
-
-
-////////////////////////
-// 리버스프록시구현 (서버recv -> 본인이 클라 send -> 본인클라 recv -> 서버 send)
-////////////////////////
-// 서버 accept 대기 -> 서버 accept시 event 감지 루프
-// 클라에서 send 후, recv 루프
-// 서버에서 클라 send를 감지 = EPOLLIN -> 서버에서 send
-// 서버 send를 클라에서 recv하고, 클라 send
-/////////////////////////
+#define MAX_EVENTS 10
 
 struct Session {
     int sock = INVALID_SOCKET;
@@ -147,7 +137,6 @@ int main() {
                         if (errno == EAGAIN) {
                             break;
                         }
-
                         cout << "send() error" << endl;
                         close(session->sock);
                         sessions.erase(
